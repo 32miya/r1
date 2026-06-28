@@ -149,15 +149,86 @@ canvas#hw{display:block;width:100%;}
 .hp-awful{color:#FF4444;}
 
 /* ══ リザルト ══ */
-#result{display:none;position:fixed;inset:0;background:rgba(10,0,30,.96);
-  flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:200;padding:28px;}
-#result h2{font-size:2.2rem;letter-spacing:.08em;}
-#result .stats{color:#9AB;line-height:2;text-align:center;font-size:.9rem;}
-.res-btn{padding:13px 44px;border:none;border-radius:36px;font-size:.95rem;font-weight:900;cursor:pointer;letter-spacing:.08em;}
-#retry-btn{background:#FFD166;color:#1A0A00;}
-#next-song-btn{background:#6BFF8A;color:#003300;}
-#stage-clear-btn{background:linear-gradient(135deg,#FFD166,#FF6BAD);color:#1A0008;}
-#title-btn{background:rgba(255,255,255,.1);color:#9AB;}
+#result{display:none;position:fixed;inset:0;z-index:200;overflow:hidden;
+  flex-direction:column;align-items:center;justify-content:flex-start;
+  padding:env(safe-area-inset-top,20px) 20px 20px;overflow-y:auto;}
+#result-particles{position:fixed;inset:0;pointer-events:none;z-index:0;}
+#result-bg{position:fixed;inset:0;z-index:0;transition:background 0.5s;}
+#result-content{position:relative;z-index:1;display:flex;flex-direction:column;
+  align-items:center;width:100%;max-width:400px;gap:10px;padding-top:8px;}
+
+/* キャラ表示 */
+#result-char-sprite{width:135px;height:220px;background-size:540px 220px;
+  background-repeat:no-repeat;background-position:0 0;
+  mix-blend-mode:multiply;margin:0 auto;
+  filter:drop-shadow(0 0 20px rgba(255,220,100,.8));
+  clip-path:inset(0 5px 0 0);}
+@keyframes rc-enter{0%{transform:scale(0.3) translateY(40px);opacity:0}
+  60%{transform:scale(1.15) translateY(-8px);opacity:1}
+  100%{transform:scale(1) translateY(0);opacity:1}}
+@keyframes rc-bounce{0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-12px) scale(1.05)}}
+.result-anim-enter{animation:rc-enter .55s cubic-bezier(.2,.8,.3,1.2) forwards;}
+.result-anim-bounce{animation:rc-bounce 1.8s ease-in-out infinite;}
+
+/* ランクバッジ */
+#result-rank-wrap{text-align:center;}
+#result-rank-emoji{font-size:3rem;display:block;line-height:1;}
+#result-rank{font-size:2.6rem;font-weight:900;letter-spacing:.06em;margin:4px 0;}
+@keyframes rank-pop{0%{transform:scale(0);opacity:0}
+  65%{transform:scale(1.2);opacity:1}
+  85%{transform:scale(.95)}
+  100%{transform:scale(1);opacity:1}}
+.rank-pop{animation:rank-pop .6s cubic-bezier(.2,.8,.3,1.2) .3s both;}
+@keyframes glow-pulse{0%,100%{text-shadow:0 0 20px currentColor,0 0 40px currentColor}
+  50%{text-shadow:0 0 40px currentColor,0 0 80px currentColor,0 0 120px currentColor}}
+
+/* スコア */
+#result-score-big{font-size:3rem;font-weight:900;color:#FFD166;
+  text-shadow:0 0 24px #FFD166;letter-spacing:.04em;line-height:1;}
+#result-score-label{font-size:.65rem;color:rgba(255,255,255,.5);letter-spacing:.12em;margin-top:-4px;}
+
+/* 曲タイトル */
+#result-song-title{font-size:.85rem;color:#fff;text-align:center;opacity:.85;
+  background:rgba(255,255,255,.1);padding:5px 16px;border-radius:20px;max-width:90%;}
+
+/* ヒットバー */
+#result-bars-wrap{width:100%;display:flex;flex-direction:column;gap:6px;
+  background:rgba(0,0,0,.3);border-radius:14px;padding:12px 14px;}
+.res-bar-row{display:flex;align-items:center;gap:8px;font-size:.75rem;}
+.res-bar-label{width:36px;font-weight:900;text-align:right;flex-shrink:0;}
+.res-bar-track{flex:1;height:12px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;}
+.res-bar-fill{height:100%;border-radius:6px;width:0;transition:width .8s cubic-bezier(.2,1,.3,1);}
+.res-bar-count{width:28px;text-align:left;font-weight:700;flex-shrink:0;}
+.lc-cool{color:#FFD166;}.lf-cool{background:linear-gradient(90deg,#C89000,#FFD166);}
+.lc-good{color:#6BFF8A;}.lf-good{background:linear-gradient(90deg,#1a7a3a,#6BFF8A);}
+.lc-bad{color:#FF8844;}.lf-bad{background:linear-gradient(90deg,#884400,#FF8844);}
+.lc-miss{color:#FF5566;}.lf-miss{background:linear-gradient(90deg,#880022,#FF5566);}
+
+/* 難易度 */
+#result-diff-line{font-size:.7rem;color:rgba(255,255,255,.5);text-align:center;}
+
+/* ボタン */
+#result-btns{width:100%;display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+.res-btn{padding:14px 20px;border:none;border-radius:40px;font-size:.95rem;font-weight:900;
+  cursor:pointer;letter-spacing:.08em;width:100%;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);transition:transform .1s,filter .1s;}
+.res-btn:active{transform:scale(.95);filter:brightness(1.3);}
+#retry-btn{background:linear-gradient(135deg,#FFD166,#C89000);color:#1A0A00;}
+#next-song-btn{background:linear-gradient(135deg,#6BFF8A,#1a7a3a);color:#002200;}
+#stage-clear-btn{background:linear-gradient(135deg,#FFD166,#FF6BAD,#a855f7);color:#fff;}
+#title-btn{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);
+  border:1px solid rgba(255,255,255,.15);}
+
+/* ランク別テーマ */
+.rank-cool #result-rank{color:#FFD166;animation:rank-pop .6s cubic-bezier(.2,.8,.3,1.2) .3s both,glow-pulse 2s ease-in-out 1s infinite;}
+.rank-cool #result-score-big{color:#FFD166;text-shadow:0 0 30px #FFD166;}
+.rank-good #result-rank{color:#6BFF8A;animation:rank-pop .6s cubic-bezier(.2,.8,.3,1.2) .3s both,glow-pulse 2s ease-in-out 1s infinite;}
+.rank-good #result-score-big{color:#6BFF8A;text-shadow:0 0 24px #6BFF8A;}
+.rank-bad #result-rank{color:#FF8844;animation:rank-pop .6s cubic-bezier(.2,.8,.3,1.2) .3s both;}
+.rank-bad #result-score-big{color:#FF8844;}
+.rank-awful #result-rank{color:#FF5566;animation:rank-pop .6s cubic-bezier(.2,.8,.3,1.2) .3s both;}
+.rank-awful #result-score-big{color:#FF5566;}
 </style>
 </head>
 <body>
@@ -246,14 +317,46 @@ canvas#hw{display:block;width:100%;}
 
 <!-- リザルト -->
 <div id="result">
-  <div id="result-char" style="font-size:2.8rem">🐼</div>
-  <h2 id="result-rank">グッド！</h2>
-  <div class="stats" id="result-stats"></div>
-  <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;">
-    <button class="res-btn hidden" id="next-song-btn">▶ 次の曲へ！</button>
-    <button class="res-btn hidden" id="stage-clear-btn">🌟 ステージクリア！</button>
-    <button class="res-btn hidden" id="retry-btn">↩ もう一度</button>
-    <button class="res-btn" id="title-btn">← ステージ選択</button>
+  <canvas id="result-particles"></canvas>
+  <div id="result-bg"></div>
+  <div id="result-content">
+    <div id="result-char-sprite" class="s2"></div>
+    <div id="result-rank-wrap">
+      <span id="result-rank-emoji">🌟</span>
+      <h2 id="result-rank">クール！</h2>
+    </div>
+    <div id="result-score-big">0</div>
+    <div id="result-score-label">SCORE</div>
+    <div id="result-song-title">—</div>
+    <div id="result-bars-wrap">
+      <div class="res-bar-row">
+        <span class="res-bar-label lc-cool">クール</span>
+        <div class="res-bar-track"><div class="res-bar-fill lf-cool" id="bar-cool"></div></div>
+        <span class="res-bar-count lc-cool" id="cnt-cool">0</span>
+      </div>
+      <div class="res-bar-row">
+        <span class="res-bar-label lc-good">グッド</span>
+        <div class="res-bar-track"><div class="res-bar-fill lf-good" id="bar-good"></div></div>
+        <span class="res-bar-count lc-good" id="cnt-good">0</span>
+      </div>
+      <div class="res-bar-row">
+        <span class="res-bar-label lc-bad">バッド</span>
+        <div class="res-bar-track"><div class="res-bar-fill lf-bad" id="bar-bad"></div></div>
+        <span class="res-bar-count lc-bad" id="cnt-bad">0</span>
+      </div>
+      <div class="res-bar-row">
+        <span class="res-bar-label lc-miss">ミス</span>
+        <div class="res-bar-track"><div class="res-bar-fill lf-miss" id="bar-miss"></div></div>
+        <span class="res-bar-count lc-miss" id="cnt-miss">0</span>
+      </div>
+    </div>
+    <div id="result-diff-line">—</div>
+    <div id="result-btns">
+      <button class="res-btn hidden" id="next-song-btn">▶ 次の曲へ！</button>
+      <button class="res-btn hidden" id="stage-clear-btn">🌟 ステージクリア！</button>
+      <button class="res-btn hidden" id="retry-btn">↩ もう一度</button>
+      <button class="res-btn" id="title-btn">← ステージ選択</button>
+    </div>
   </div>
 </div>
 
@@ -817,7 +920,7 @@ function applySprites(){
   document.getElementById('teacher-sprite').style.backgroundImage=`url('${CHAR_ASSETS[teacher]}')`;
   document.getElementById('player-label').textContent=CHAR_LABELS[player]+'（あなた）';
   document.getElementById('teacher-label').textContent=CHAR_LABELS[teacher]+'（先生）';
-  document.getElementById('result-char').textContent=CHAR_EMOJIS[player];
+  document.getElementById('result-char-sprite').style.backgroundImage=`url('${CHAR_ASSETS[player]}')`;
   document.getElementById('song-info-bar').textContent=`S${s.stage}-${s.idx+1} BPM${Math.round(s.bpm*DIFFS[currentDiff].bpmMul)}`;
 }
 
@@ -838,6 +941,62 @@ function startGame(){
   actx.resume().then(()=>{songStart=actx.currentTime+.1;gameActive=true;scheduleSong();requestAnimationFrame(rafLoop);});
 }
 
+// ══ パーティクル ══
+let ptcCanvas,ptcCtx,ptcAnimId,ptcList=[];
+function initParticles(){
+  ptcCanvas=document.getElementById('result-particles');
+  ptcCtx=ptcCanvas.getContext('2d');
+  ptcCanvas.width=window.innerWidth;ptcCanvas.height=window.innerHeight;
+}
+function spawnParticles(type){
+  ptcList=[];
+  if(type==='none') return;
+  const colors=type==='cool'
+    ?['#FFD166','#FF6BAD','#6BFF8A','#44AAFF','#fff','#FF5566']
+    :type==='good'?['#6BFF8A','#44AAFF','#fff','#FFD166']
+    :['#FF8844','#FFD166'];
+  const count=type==='cool'?80:type==='good'?50:20;
+  for(let i=0;i<count;i++){
+    ptcList.push({
+      x:Math.random()*ptcCanvas.width,y:Math.random()*ptcCanvas.height*.5,
+      vx:(Math.random()-.5)*4,vy:Math.random()*3+1,
+      r:Math.random()*6+3,col:colors[Math.floor(Math.random()*colors.length)],
+      rot:Math.random()*360,rotV:(Math.random()-.5)*8,
+      life:1,dec:Math.random()*.004+.003,
+      shape:Math.random()<.5?'rect':'circle'
+    });
+  }
+}
+function runParticles(){
+  ptcCtx.clearRect(0,0,ptcCanvas.width,ptcCanvas.height);
+  ptcList=ptcList.filter(p=>p.life>0);
+  ptcList.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=.08; p.rot+=p.rotV; p.life-=p.dec;
+    ptcCtx.save();ptcCtx.globalAlpha=p.life;ptcCtx.fillStyle=p.col;
+    ptcCtx.translate(p.x,p.y);ptcCtx.rotate(p.rot*Math.PI/180);
+    if(p.shape==='rect') ptcCtx.fillRect(-p.r,-p.r/2,p.r*2,p.r);
+    else{ptcCtx.beginPath();ptcCtx.arc(0,0,p.r,0,Math.PI*2);ptcCtx.fill();}
+    ptcCtx.restore();
+  });
+  if(ptcList.length>0) ptcAnimId=requestAnimationFrame(runParticles);
+  else ptcCtx.clearRect(0,0,ptcCanvas.width,ptcCanvas.height);
+}
+function stopParticles(){cancelAnimationFrame(ptcAnimId);ptcList=[];if(ptcCtx)ptcCtx.clearRect(0,0,9999,9999);}
+
+// ══ スコアカウントアップ ══
+function countUp(el,target,dur=900){
+  const start=performance.now();
+  const from=0;
+  function tick(now){
+    const t=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-t,3);
+    el.textContent=Math.floor(from+(target-from)*ease).toLocaleString();
+    if(t<1) requestAnimationFrame(tick);
+    else el.textContent=target.toLocaleString();
+  }
+  requestAnimationFrame(tick);
+}
+
 function endSong(){
   gameActive=false;clearTimeout(schedTimer);
   const s=curSong();
@@ -845,19 +1004,63 @@ function endSong(){
   const total=notes.filter(n=>!n.isTeacher).length;
   const passed=ratingScore>=30;
   if(passed) clearedSongs.add(s.id);
-  let rank;
-  if(ratingScore>=80)rank='🌟 クール！';
-  else if(ratingScore>=55)rank='👊 グッド！';
-  else if(ratingScore>=30)rank='😅 バッド...';
-  else rank='💀 最悪';
+
+  let rankKey,rankEmoji,rankText,bgGrad,ptcType;
+  if(ratingScore>=80){
+    rankKey='cool';rankEmoji='🌟';rankText='クール！';
+    bgGrad='linear-gradient(160deg,#3a1a00,#2a0a0e,#0a0a3e)';ptcType='cool';
+  } else if(ratingScore>=55){
+    rankKey='good';rankEmoji='👊';rankText='グッド！';
+    bgGrad='linear-gradient(160deg,#002a10,#0a1a2e,#0a0a3e)';ptcType='good';
+  } else if(ratingScore>=30){
+    rankKey='bad';rankEmoji='😅';rankText='バッド...';
+    bgGrad='linear-gradient(160deg,#1a0a00,#1a0a2e)';ptcType='spark';
+  } else {
+    rankKey='awful';rankEmoji='💀';rankText='最悪';
+    bgGrad='linear-gradient(160deg,#1a0000,#0a000a)';ptcType='none';
+  }
+
   document.getElementById('game').style.display='none';
-  const res=document.getElementById('result');res.style.display='flex';
-  document.getElementById('result-rank').textContent=rank;
-  document.getElementById('result-stats').innerHTML=
-    `<b>${s.title}</b><br>スコア: ${score}<br>`+
-    `クール: ${hits.cool} / グッド: ${hits.good} / バッド: ${hits.bad} / ミス: ${hits.awful}<br>`+
-    `ヒット率: ${Math.round(hitTotal/Math.max(1,total)*100)}%<br>`+
-    `難易度: ${DIFFS[currentDiff].label} — BPM ${Math.round(BPM)}`;
+  const res=document.getElementById('result');
+  res.style.display='flex';
+  res.className='';res.classList.add('rank-'+rankKey);
+  document.getElementById('result-bg').style.background=bgGrad;
+
+  // キャラスプライト（クール→pose2 / それ以外→pose3）
+  const sprEl=document.getElementById('result-char-sprite');
+  sprEl.classList.remove('s0','s1','s2','s3','result-anim-enter','result-anim-bounce');
+  void sprEl.offsetWidth;
+  sprEl.classList.add(passed?'s2':'s3','result-anim-enter');
+  setTimeout(()=>{ if(passed) sprEl.classList.add('result-anim-bounce'); },600);
+
+  // ランク
+  document.getElementById('result-rank-emoji').textContent=rankEmoji;
+  const rankEl=document.getElementById('result-rank');
+  rankEl.textContent=rankText;
+  rankEl.classList.remove('rank-pop');void rankEl.offsetWidth;rankEl.classList.add('rank-pop');
+
+  // スコアカウントアップ
+  countUp(document.getElementById('result-score-big'),score,1000);
+
+  // 曲タイトル・難易度
+  document.getElementById('result-song-title').textContent=`♪ ${s.title}`;
+  const hitRate=Math.round(hitTotal/Math.max(1,total)*100);
+  document.getElementById('result-diff-line').textContent=
+    `${DIFFS[currentDiff].label} — BPM ${Math.round(BPM)} — ヒット率 ${hitRate}%`;
+
+  // ヒットバー
+  const maxH=Math.max(hits.cool,hits.good,hits.bad,hits.awful,1);
+  setTimeout(()=>{
+    [['cool',hits.cool],['good',hits.good],['bad',hits.bad],['miss',hits.awful]].forEach(([k,v])=>{
+      document.getElementById('bar-'+k).style.width=(v/maxH*100)+'%';
+      document.getElementById('cnt-'+k).textContent=v;
+    });
+  },200);
+
+  // パーティクル
+  stopParticles();initParticles();spawnParticles(ptcType);
+  if(ptcType!=='none') runParticles();
+
   // ボタン制御
   const nextBtn=document.getElementById('next-song-btn');
   const clearBtn=document.getElementById('stage-clear-btn');
@@ -870,7 +1073,6 @@ function endSong(){
       nextBtn.textContent=`▶ 次の曲「${nextInStage.title}」へ！`;
       nextBtn.classList.remove('hidden');
     } else {
-      // ステージ内全曲クリア確認
       const allCleared=stageSongs.every(sg=>clearedSongs.has(sg.id));
       if(allCleared&&s.stage<5){
         clearBtn.textContent=`🌟 ステージ${s.stage}クリア！次のステージへ`;
@@ -950,16 +1152,19 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   // リザルトボタン
   document.getElementById('next-song-btn').addEventListener('click',()=>{
+    stopParticles();
     const s=curSong();const next=SONGS.find(sg=>sg.stage===s.stage&&sg.idx===s.idx+1);
     if(next){currentSongId=next.id;startGame();}
   });
   document.getElementById('stage-clear-btn').addEventListener('click',()=>{
+    stopParticles();
     document.getElementById('result').style.display='none';
     document.getElementById('stage-select').classList.remove('hidden');
     renderStageSelect();
   });
-  document.getElementById('retry-btn').addEventListener('click',()=>startGame());
+  document.getElementById('retry-btn').addEventListener('click',()=>{stopParticles();startGame();});
   document.getElementById('title-btn').addEventListener('click',()=>{
+    stopParticles();
     gameActive=false;clearTimeout(schedTimer);
     document.getElementById('result').style.display='none';
     document.getElementById('stage-select').classList.remove('hidden');

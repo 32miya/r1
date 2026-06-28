@@ -100,7 +100,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0a2e;font-family:
 .rl-awful{color:#FF4444;}
 #song-info-bar{font-size:.6rem;color:rgba(255,255,255,.5);text-align:center;margin-top:2px;}
 .char-sprite{height:360px;width:135px;background-size:540px 360px;
-  background-repeat:no-repeat;mix-blend-mode:multiply;flex-shrink:0;}
+  background-repeat:no-repeat;mix-blend-mode:multiply;flex-shrink:0;
+  clip-path:inset(0 5px 0 0);}
 #teacher-sprite{background-image:url('assets/fox.jpeg');}
 #player-sprite{background-image:url('assets/panda.jpeg');}
 .s0{background-position:0px 0px;}
@@ -128,10 +129,10 @@ canvas#hw{display:block;width:100%;}
   justify-content:center;flex-direction:column;gap:2px;line-height:1;}
 .btn .bl{font-size:.5rem;font-weight:700;opacity:.7;}
 .btn:active,.btn.pressed{transform:scale(.85);filter:brightness(1.6);}
-#b0{background:#C03060;color:#FFE0EE;box-shadow:0 4px 12px rgba(192,48,96,.5);}
-#b1{background:#206840;color:#E0FFE8;box-shadow:0 4px 12px rgba(32,104,64,.5);}
-#b2{background:#1840A0;color:#E0ECFF;box-shadow:0 4px 12px rgba(24,64,160,.5);}
-#b3{background:#A02020;color:#FFE0E0;box-shadow:0 4px 12px rgba(160,32,32,.5);}
+#b0{background:#C89000;color:#1A0A00;box-shadow:0 4px 16px rgba(255,209,102,.7);}
+#b1{background:#1a7a3a;color:#DFFFEC;box-shadow:0 4px 16px rgba(107,255,138,.5);}
+#b2{background:#1a50c0;color:#DDEEFF;box-shadow:0 4px 16px rgba(68,170,255,.5);}
+#b3{background:#b01828;color:#FFE0E4;box-shadow:0 4px 16px rgba(255,85,102,.5);}
 #game-vol-wrap{position:absolute;top:6px;right:8px;display:flex;align-items:center;
   gap:5px;z-index:10;opacity:.65;}
 #game-vol-wrap span{font-size:.6rem;color:#666;}
@@ -676,8 +677,8 @@ let PHASES=[];
 // ══════════════════════════════════════════════════
 //  キャンバス ノートハイウェイ
 // ══════════════════════════════════════════════════
-const HW_H=110,HIT_X=72,SCROLL_SPD=160,NOTE_W=40;
-const LANE_COLORS=['#FF6BAD','#6BFF8A','#FF4444','#4488FF'];
+const HW_H=140,HIT_X=80,SCROLL_SPD=180,NOTE_W=52;
+const LANE_COLORS=['#FFD166','#6BFF8A','#FF5566','#44AAFF'];
 const LANE_LABELS=['□','△','○','×'];
 let canvas,c2d;
 function initCanvas(){
@@ -686,23 +687,54 @@ function initCanvas(){
 }
 function drawHighway(st){
   const W=canvas.width,LH=HW_H/4;
-  c2d.fillStyle='#050010';c2d.fillRect(0,0,W,HW_H);
-  for(let i=0;i<4;i++){c2d.fillStyle=i%2===0?'rgba(255,255,255,.025)':'rgba(0,0,0,0)';c2d.fillRect(0,i*LH,W,LH);}
-  c2d.strokeStyle='rgba(255,255,255,.08)';c2d.lineWidth=1;
+  // 背景
+  c2d.fillStyle='#12063a';c2d.fillRect(0,0,W,HW_H);
+  // レーンストライプ
+  for(let i=0;i<4;i++){
+    c2d.fillStyle=`rgba(${i===0?'255,200,0':i===1?'80,255,120':i===2?'255,60,80':'60,140,255'},.07)`;
+    c2d.fillRect(0,i*LH,W,LH);
+  }
+  // レーン区切り線
+  c2d.strokeStyle='rgba(255,255,255,.22)';c2d.lineWidth=1;
   for(let i=1;i<4;i++){c2d.beginPath();c2d.moveTo(0,i*LH);c2d.lineTo(W,i*LH);c2d.stroke();}
-  const grd=c2d.createLinearGradient(HIT_X-28,0,HIT_X+28,0);
-  grd.addColorStop(0,'rgba(255,255,255,0)');grd.addColorStop(.5,'rgba(255,255,255,.12)');grd.addColorStop(1,'rgba(255,255,255,0)');
-  c2d.fillStyle=grd;c2d.fillRect(HIT_X-28,0,56,HW_H);
-  c2d.strokeStyle='rgba(255,255,255,.9)';c2d.lineWidth=2;c2d.beginPath();c2d.moveTo(HIT_X,0);c2d.lineTo(HIT_X,HW_H);c2d.stroke();
-  for(let i=0;i<4;i++){c2d.fillStyle=LANE_COLORS[i];c2d.font='bold 12px Arial';c2d.textAlign='center';c2d.fillText(LANE_LABELS[i],HIT_X-22,i*LH+LH*.62);}
+  // ヒットライン発光
+  const grd=c2d.createLinearGradient(HIT_X-36,0,HIT_X+36,0);
+  grd.addColorStop(0,'rgba(255,255,255,0)');grd.addColorStop(.5,'rgba(255,255,255,.18)');grd.addColorStop(1,'rgba(255,255,255,0)');
+  c2d.fillStyle=grd;c2d.fillRect(HIT_X-36,0,72,HW_H);
+  c2d.strokeStyle='rgba(255,255,255,1)';c2d.lineWidth=2.5;c2d.beginPath();c2d.moveTo(HIT_X,0);c2d.lineTo(HIT_X,HW_H);c2d.stroke();
+  // レーンラベル
+  for(let i=0;i<4;i++){
+    c2d.shadowColor=LANE_COLORS[i];c2d.shadowBlur=8;
+    c2d.fillStyle=LANE_COLORS[i];c2d.font='bold 14px Arial';c2d.textAlign='center';
+    c2d.fillText(LANE_LABELS[i],HIT_X-28,i*LH+LH*.65);
+    c2d.shadowBlur=0;
+  }
+  // ノーツ描画
   notes.forEach(n=>{
     if(n.hit||n.missed) return;
     const x=HIT_X+(n.time-st)*SCROLL_SPD;
     if(x<-NOTE_W||x>W+NOTE_W) return;
     const y=n.lane*LH,col=LANE_COLORS[n.lane];
     c2d.save();
-    if(n.isTeacher){c2d.strokeStyle=col;c2d.lineWidth=3;c2d.shadowColor=col;c2d.shadowBlur=7;c2d.strokeRect(x-NOTE_W/2,y+2,NOTE_W,LH-4);c2d.fillStyle=col;c2d.font='bold 14px Arial';c2d.textAlign='center';c2d.fillText(LANE_LABELS[n.lane],x,y+LH*.65);}
-    else{c2d.shadowColor=col;c2d.shadowBlur=10;c2d.fillStyle=col;c2d.fillRect(x-NOTE_W/2,y+2,NOTE_W,LH-4);c2d.shadowBlur=0;c2d.fillStyle='rgba(0,0,0,.7)';c2d.font='bold 15px Arial';c2d.textAlign='center';c2d.fillText(LANE_LABELS[n.lane],x,y+LH*.65);}
+    if(n.isTeacher){
+      // 先生ノート：太枠＋半透明塗り
+      c2d.shadowColor=col;c2d.shadowBlur=14;
+      c2d.strokeStyle=col;c2d.lineWidth=3;
+      c2d.strokeRect(x-NOTE_W/2,y+2,NOTE_W,LH-4);
+      c2d.fillStyle=col.replace('#','rgba(').replace(/(..)(..)(..)$/,(_,r,g,b)=>`${parseInt(r,16)},${parseInt(g,16)},${parseInt(b,16)},.25)`);
+      c2d.fillRect(x-NOTE_W/2,y+2,NOTE_W,LH-4);
+      c2d.shadowBlur=0;c2d.fillStyle='#fff';c2d.font='bold 15px Arial';c2d.textAlign='center';
+      c2d.fillText(LANE_LABELS[n.lane],x,y+LH*.68);
+    } else {
+      // プレイヤーノート：塗りつぶし＋白枠＋強めグロー
+      c2d.shadowColor=col;c2d.shadowBlur=22;
+      c2d.fillStyle=col;c2d.fillRect(x-NOTE_W/2,y+2,NOTE_W,LH-4);
+      c2d.shadowBlur=0;
+      c2d.strokeStyle='rgba(255,255,255,.85)';c2d.lineWidth=2;
+      c2d.strokeRect(x-NOTE_W/2,y+2,NOTE_W,LH-4);
+      c2d.fillStyle='#000';c2d.font='bold 15px Arial';c2d.textAlign='center';
+      c2d.fillText(LANE_LABELS[n.lane],x,y+LH*.68);
+    }
     c2d.restore();
   });
 }
